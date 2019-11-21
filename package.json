@@ -1,0 +1,39 @@
+{
+	"name": "bolt02",
+	"version": "0.1.0",
+	"description": "Utility for crafting and parsing messages between Lightning Network nodes.",
+	"main": "index.js",
+	"types": "index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"lightning",
+		"network",
+		"messaging",
+		"messages",
+		"bolt",
+		"2",
+		"two"
+	],
+	"engines": {
+		"node": ">=10.4.0",
+		"npm": ">=6.0.0"
+	},
+	"dependencies": {
+		"bigint-buffer": "^1.1.5",
+		"debug": "^4.1.1",
+		"lightning-tlv": "^0.1.4"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.2.5",
+		"@types/debug": "^4.1.5",
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.12.11",
+		"chai": "^4.2.0",
+		"mocha": "^6.2.2",
+		"typescript": "^3.7.2"
+	},
+	"author": "Arik Sosman",
+	"license": "MIT"
+}
