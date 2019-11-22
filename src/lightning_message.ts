@@ -1,4 +1,9 @@
+import bigintBuffer = require('bigint-buffer');
+import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types/message_field_type';
+import {OpenChannelMessageFields} from './messages/open_channel';
+
+const secp256k1 = ecurve.getCurveByName('secp256k1');
 
 export interface LightningMessageField {
 	readonly name: string;
@@ -16,7 +21,7 @@ export enum LightningMessageTypes {
 	CLOSING_SIGNED = 39,
 
 	UPDATE_ADD_HTLC = 128,
-	UPDATE_FILFILL_HTLC = 130,
+	UPDATE_FULFILL_HTLC = 130,
 	UPDATE_FAIL_HTLC = 131,
 	UPDATE_FAIL_MALFORMED_HTLC = 135
 }
@@ -61,8 +66,19 @@ export default abstract class LightningMessage {
 				const currentTypeDetails = MessageFieldTypeHandler.getTypeDetails(currentType);
 				const valueBuffer = undelimitedBuffer.slice(offset, offset + currentTypeDetails.length);
 				offset += currentTypeDetails.length;
+
 				// TODO: use custom type handler with valueBuffer
-				this.setValue(currentField.name, valueBuffer);
+				let value: any = valueBuffer;
+				if (currentType === MessageFieldType.u16) {
+					value = valueBuffer.readUInt16BE(0);
+				} else if (currentType === MessageFieldType.u32) {
+					value = valueBuffer.readUInt32BE(0);
+				} else if (currentType === MessageFieldType.u64) {
+					value = bigintBuffer.toBigIntBE(valueBuffer);
+				} else if (currentType === MessageFieldType.POINT) {
+					value = ecurve.Point.decodeFrom(secp256k1, valueBuffer);
+				}
+				this.setValue(currentField.name, value);
 			} else {
 				// do custom handling
 				const customFieldResult = this.parseCustomField(undelimitedBuffer.slice(offset), currentField);
