@@ -14,7 +14,7 @@ export interface OpenChannelMessageFields {
 	feerate_per_kw: number,
 	to_self_delay: number,
 	max_accepted_htlcs: number,
-	funding_pubkey: Point,
+	funding_pubkey: Point
 }
 
 export class OpenChannelMessage extends LightningMessage {
