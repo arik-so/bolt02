@@ -1,7 +1,6 @@
 import bigintBuffer = require('bigint-buffer');
 import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types/message_field_type';
-import {OpenChannelMessageFields} from './messages/open_channel';
 
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
@@ -77,6 +76,8 @@ export default abstract class LightningMessage {
 					value = bigintBuffer.toBigIntBE(valueBuffer);
 				} else if (currentType === MessageFieldType.POINT) {
 					value = ecurve.Point.decodeFrom(secp256k1, valueBuffer);
+				} else if (currentType === MessageFieldType.BYTE) {
+					value = valueBuffer.readUInt8(0);
 				}
 				this.setValue(currentField.name, value);
 			} else {
@@ -85,6 +86,11 @@ export default abstract class LightningMessage {
 				this.setValue(currentField.name, customFieldResult.value);
 				offset += customFieldResult.offsetDelta;
 			}
+
+			if (offset >= undelimitedBuffer.length) {
+				break;
+			}
+
 		}
 		return this;
 	}

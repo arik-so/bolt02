@@ -3,7 +3,8 @@ export enum MessageFieldType {
 	u32,
 	u64,
 	HASH,
-	POINT
+	POINT,
+	BYTE
 }
 
 export interface MessageFieldTypeDetails {
@@ -18,7 +19,8 @@ export class MessageFieldTypeHandler {
 		[MessageFieldType.u32]: {name: 'u32', length: 4},
 		[MessageFieldType.u64]: {name: 'u64', length: 8},
 		[MessageFieldType.HASH]: {name: 'hash', length: 32},
-		[MessageFieldType.POINT]: {name: 'point', length: 33}
+		[MessageFieldType.POINT]: {name: 'point', length: 33},
+		[MessageFieldType.BYTE]: {name: 'byte', length: 1}
 	};
 
 	public static getTypeDetails(type: MessageFieldType): MessageFieldTypeDetails {
