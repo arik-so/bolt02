@@ -1,6 +1,7 @@
 import bigintBuffer = require('bigint-buffer');
 import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types/message_field_type';
+import {Point} from 'ecurve';
 
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
@@ -26,8 +27,6 @@ export enum LightningMessageTypes {
 }
 
 export default abstract class LightningMessage {
-
-	abstract toBuffer(): Buffer;
 
 	public get length(): number {
 		const buffer = this.toBuffer();
@@ -95,10 +94,47 @@ export default abstract class LightningMessage {
 		return this;
 	}
 
+	public toBuffer() {
+		let buffer = Buffer.alloc(2);
+		buffer.writeUInt16BE(this.getType(), 0);
+
+		const fields = this.getFields();
+		for (const currentField of fields) {
+			const currentType = currentField.type;
+			if (currentType in MessageFieldType) {
+				// @ts-ignore
+				const currentTypeDetails = MessageFieldTypeHandler.getTypeDetails(currentType);
+				const value = this.getValue(currentField.name);
+				const valueBuffer = value instanceof Buffer ? value : Buffer.alloc(currentTypeDetails.length, 0);
+
+				if (currentType === MessageFieldType.u16) {
+					valueBuffer.writeUInt16BE(value, 0);
+				} else if (currentType === MessageFieldType.u32) {
+					valueBuffer.writeUInt32BE(value, 0);
+				} else if (currentType === MessageFieldType.u64) {
+					bigintBuffer.toBufferBE(value as bigint, 8).copy(valueBuffer);
+				} else if (currentType === MessageFieldType.POINT) {
+					(value as Point).getEncoded(true).copy(valueBuffer);
+				} else if (currentType === MessageFieldType.BYTE) {
+					valueBuffer.writeUInt8(value, 0);
+				}
+				buffer = Buffer.concat([buffer, valueBuffer]);
+			} else {
+				// do custom handling
+				// TODO
+			}
+		}
+		return buffer;
+	}
+
+	protected abstract getType(): number;
+
 	protected abstract getFields(): LightningMessageField[];
 
 	protected abstract parseCustomField(remainingBuffer: Buffer, field: LightningMessageField): { value: any, offsetDelta: number };
 
 	protected abstract setValue(field: string, value: any);
+
+	protected abstract getValue(field: string): any;
 
 }

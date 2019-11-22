@@ -13,6 +13,9 @@ describe('Lightning Message Tests', () => {
 
 		const openChannelMessage = LightningMessage.parse(buffer) as OpenChannelMessage;
 		assert.equal(openChannelMessage['values'].funding_pubkey.getEncoded(true).toString('hex'), '021d02f90a74bc300d360636b7e28da600ac0cd8b98638baa133c48147349a3bf4');
+
+		const restoredBuffer = openChannelMessage.toBuffer();
+		assert.equal(restoredBuffer.toString('hex'), buffer.toString('hex'));
 	});
 
 });

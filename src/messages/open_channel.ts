@@ -1,4 +1,4 @@
-import LightningMessage, {LightningMessageField} from '../lightning_message';
+import LightningMessage, {LightningMessageField, LightningMessageTypes} from '../lightning_message';
 import {MessageFieldType, MessageFieldTypeHandler} from '../types/message_field_type';
 import {Point} from 'ecurve';
 
@@ -34,6 +34,10 @@ export class OpenChannelMessage extends LightningMessage {
 		super();
 	}
 
+	protected getType(): number {
+		return LightningMessageTypes.OPEN_CHANNEL;
+	}
+
 	private static readonly FIELDS: LightningMessageField[] = [
 		{name: 'chain_hash', type: MessageFieldType.HASH},
 		{name: 'temporary_channel_id', type: MessageFieldType.HASH},
@@ -53,12 +57,16 @@ export class OpenChannelMessage extends LightningMessage {
 		{name: 'htlc_basepoint', type: MessageFieldType.POINT},
 		{name: 'first_per_commitment_point', type: MessageFieldType.POINT},
 		{name: 'channel_flags', type: MessageFieldType.BYTE},
-		{name: 'shutdown_len', type: MessageFieldType.u16},
-		{name: 'shutdown_scriptpubkey', type: 'shutdown_scriptpubkey'}
+		// {name: 'shutdown_len', type: MessageFieldType.u16},
+		// {name: 'shutdown_scriptpubkey', type: 'shutdown_scriptpubkey'}
 	];
 
 	protected getFields(): LightningMessageField[] {
 		return OpenChannelMessage.FIELDS;
+	}
+
+	protected getValue(field: string): any {
+		return this.values[field];
 	}
 
 	protected setValue(field: string, value: any) {
@@ -70,10 +78,6 @@ export class OpenChannelMessage extends LightningMessage {
 			const value = remainingBuffer.slice(0, this.values.shutdown_len);
 			return {value, offsetDelta: this.values.shutdown_len};
 		}
-		return undefined;
-	}
-
-	toBuffer(): Buffer {
 		return undefined;
 	}
 
