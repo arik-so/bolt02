@@ -17,14 +17,18 @@ export interface AcceptChannelMessageFields {
 	delayed_payment_basepoint: Point,
 	htlc_basepoint: Point,
 	first_per_commitment_point: Point,
-	shutdown_len: number,
-	shutdown_scriptpubkey: Buffer,
+	shutdown_len?: number | null,
+	shutdown_scriptpubkey?: Buffer | null,
 }
 
 export class AcceptChannelMessage extends LightningMessage {
 
-	// @ts-ignore
-	private values: AcceptChannelMessageFields = {};
+	protected values: AcceptChannelMessageFields;
+
+	constructor(values: AcceptChannelMessageFields) {
+		super();
+		this.values = values;
+	}
 
 	protected getType(): number {
 		return LightningMessageTypes.ACCEPT_CHANNEL;
@@ -53,14 +57,6 @@ export class AcceptChannelMessage extends LightningMessage {
 
 	protected parseCustomField(remainingBuffer: Buffer, field: LightningMessageField): { value: any; offsetDelta: number } {
 		return undefined;
-	}
-
-	protected getValue(field: string): any {
-		return this.values[field];
-	}
-
-	protected setValue(field: string, value: any) {
-		this.values[field] = value;
 	}
 
 }

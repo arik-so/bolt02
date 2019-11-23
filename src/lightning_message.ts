@@ -28,6 +28,8 @@ export enum LightningMessageTypes {
 
 export default abstract class LightningMessage {
 
+	protected values = {};
+
 	public get length(): number {
 		const buffer = this.toBuffer();
 		return buffer.length;
@@ -43,10 +45,10 @@ export default abstract class LightningMessage {
 		let message: LightningMessage;
 		switch (type) {
 			case LightningMessageTypes.OPEN_CHANNEL:
-				message = new OpenChannelMessage();
+				message = new OpenChannelMessage({});
 				break;
 			case LightningMessageTypes.ACCEPT_CHANNEL:
-				message = new AcceptChannelMessage();
+				message = new AcceptChannelMessage({});
 				break;
 			default:
 				throw new Error('unsupported data');
@@ -78,11 +80,11 @@ export default abstract class LightningMessage {
 				} else if (currentType === MessageFieldType.BYTE) {
 					value = valueBuffer.readUInt8(0);
 				}
-				this.setValue(currentField.name, value);
+				this.values[currentField.name] = value;
 			} else {
 				// do custom handling
 				const customFieldResult = this.parseCustomField(undelimitedBuffer.slice(offset), currentField);
-				this.setValue(currentField.name, customFieldResult.value);
+				this.values[currentField.name] = customFieldResult.value;
 				offset += customFieldResult.offsetDelta;
 			}
 
@@ -104,7 +106,7 @@ export default abstract class LightningMessage {
 			if (currentType in MessageFieldType) {
 				// @ts-ignore
 				const currentTypeDetails = MessageFieldTypeHandler.getTypeDetails(currentType);
-				const value = this.getValue(currentField.name);
+				const value = this.values[currentField.name];
 				const valueBuffer = value instanceof Buffer ? value : Buffer.alloc(currentTypeDetails.length, 0);
 
 				if (currentType === MessageFieldType.u16) {
@@ -132,9 +134,5 @@ export default abstract class LightningMessage {
 	protected abstract getFields(): LightningMessageField[];
 
 	protected abstract parseCustomField(remainingBuffer: Buffer, field: LightningMessageField): { value: any, offsetDelta: number };
-
-	protected abstract setValue(field: string, value: any);
-
-	protected abstract getValue(field: string): any;
 
 }

@@ -21,17 +21,17 @@ export interface OpenChannelMessageFields {
 	htlc_basepoint: Point,
 	first_per_commitment_point: Point,
 	channel_flags: number,
-	shutdown_len: number,
-	shutdown_scriptpubkey: Buffer,
+	shutdown_len?: number | null,
+	shutdown_scriptpubkey?: Buffer | null,
 }
 
 export class OpenChannelMessage extends LightningMessage {
 
-	// @ts-ignore
-	private values: OpenChannelMessageFields = {};
+	protected values: OpenChannelMessageFields;
 
-	protected constructor() {
+	constructor(values: OpenChannelMessageFields) {
 		super();
+		this.values = values;
 	}
 
 	protected getType(): number {
@@ -63,14 +63,6 @@ export class OpenChannelMessage extends LightningMessage {
 
 	protected getFields(): LightningMessageField[] {
 		return OpenChannelMessage.FIELDS;
-	}
-
-	protected getValue(field: string): any {
-		return this.values[field];
-	}
-
-	protected setValue(field: string, value: any) {
-		this.values[field] = value;
 	}
 
 	protected parseCustomField(remainingBuffer: Buffer, field: LightningMessageField): { value: any, offsetDelta: number } {
