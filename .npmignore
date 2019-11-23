@@ -89,8 +89,13 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# Really strip down the publication slug size
 .idea
 .tm_properties
+.editorconfig
+.travis.yml
+tsconfig.json
+test/
 
 # Ignore Typescript Generated Files:
 *.ts
