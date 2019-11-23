@@ -59,4 +59,12 @@ export class AcceptChannelMessage extends LightningMessage {
 		return undefined;
 	}
 
+	protected getDynamicValue(field: LightningMessageField): any {
+		return undefined;
+	}
+
+	protected serializeCustomField(field: LightningMessageField, value: any): Buffer {
+		return undefined;
+	}
+
 }

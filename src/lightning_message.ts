@@ -8,9 +8,15 @@ const secp256k1 = ecurve.getCurveByName('secp256k1');
 export interface LightningMessageField {
 	readonly name: string;
 	readonly type: MessageFieldType | string;
+	readonly dynamic_value?: boolean;
 }
 
 export enum LightningMessageTypes {
+	INIT = 16,
+	ERROR = 17,
+	PING = 18,
+	PONG = 19,
+
 	OPEN_CHANNEL = 32,
 	ACCEPT_CHANNEL = 33,
 	FUNDING_CREATED = 34,
@@ -39,6 +45,7 @@ export default abstract class LightningMessage {
 		// dynamic imports to avoid circular dependency
 		const {OpenChannelMessage} = require('./messages/open_channel');
 		const {AcceptChannelMessage} = require('./messages/accept_channel');
+		const {InitMessage} = require('./messages/init');
 
 		const type = undelimitedBuffer.readUInt16BE(0);
 		const undelimitedData = undelimitedBuffer.slice(2);
@@ -49,6 +56,9 @@ export default abstract class LightningMessage {
 				break;
 			case LightningMessageTypes.ACCEPT_CHANNEL:
 				message = new AcceptChannelMessage({});
+				break;
+			case LightningMessageTypes.INIT:
+				message = new InitMessage({});
 				break;
 			default:
 				throw new Error('unsupported data');
@@ -103,11 +113,19 @@ export default abstract class LightningMessage {
 		const fields = this.getFields();
 		for (const currentField of fields) {
 			const currentType = currentField.type;
-			if (currentType in MessageFieldType) {
+			let value = this.values[currentField.name];
+
+			if (currentField.dynamic_value) {
+				value = this.getDynamicValue(currentField);
+			}
+
+			if (value instanceof Buffer) {
+				// we don't need to do anything custom
+				buffer = Buffer.concat([buffer, value]);
+			} else if (currentType in MessageFieldType) {
 				// @ts-ignore
 				const currentTypeDetails = MessageFieldTypeHandler.getTypeDetails(currentType);
-				const value = this.values[currentField.name];
-				const valueBuffer = value instanceof Buffer ? value : Buffer.alloc(currentTypeDetails.length, 0);
+				const valueBuffer = Buffer.alloc(currentTypeDetails.length, 0);
 
 				if (currentType === MessageFieldType.u16) {
 					valueBuffer.writeUInt16BE(value, 0);
@@ -123,7 +141,9 @@ export default abstract class LightningMessage {
 				buffer = Buffer.concat([buffer, valueBuffer]);
 			} else {
 				// do custom handling
-				// TODO
+				// TODO: figure out way to avoid logic duplication
+				const valueBuffer = this.serializeCustomField(currentField, value);
+				buffer = Buffer.concat([buffer, valueBuffer]);
 			}
 		}
 		return buffer;
@@ -134,5 +154,10 @@ export default abstract class LightningMessage {
 	protected abstract getFields(): LightningMessageField[];
 
 	protected abstract parseCustomField(remainingBuffer: Buffer, field: LightningMessageField): { value: any, offsetDelta: number };
+
+	protected abstract getDynamicValue(field: LightningMessageField): any;
+
+	// may actually never be used
+	protected abstract serializeCustomField(field: LightningMessageField, value: any): Buffer;
 
 }

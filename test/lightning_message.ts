@@ -2,6 +2,7 @@ import chai = require('chai');
 import LightningMessage, {LightningMessageTypes} from '../src/lightning_message';
 import {OpenChannelMessage} from '../src/messages/open_channel';
 import {AcceptChannelMessage} from '../src/messages/accept_channel';
+import {InitMessage} from '../src/messages/init';
 
 const assert = chai.assert;
 
@@ -27,5 +28,17 @@ describe('Lightning Message Tests', () => {
 		const restoredBuffer = acceptChannelMessage.toBuffer();
 		assert.equal(restoredBuffer.toString('hex'), buffer.toString('hex'));
 	});
+
+	it('should serialize an init message', () => {
+		const initMessage = new InitMessage({
+			global_features: Buffer.alloc(9, 9),
+			local_features: Buffer.alloc(11, 11)
+		});
+		const serialization = initMessage.toBuffer();
+		const restoredMessage = LightningMessage.parse(serialization) as InitMessage;
+		assert.instanceOf(restoredMessage, InitMessage);
+		assert.equal(restoredMessage['values'].gflen, 9);
+		assert.equal(restoredMessage['values'].lflen, 11);
+	})
 
 });
