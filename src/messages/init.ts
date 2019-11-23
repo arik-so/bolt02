@@ -1,6 +1,5 @@
 import LightningMessage, {LightningMessageField, LightningMessageTypes} from '../lightning_message';
 import {MessageFieldType} from '../types/message_field_type';
-import {Point} from 'ecurve';
 
 export interface InitMessageFields {
 	gflen?: number,

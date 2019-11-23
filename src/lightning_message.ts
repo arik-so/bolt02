@@ -46,6 +46,8 @@ export default abstract class LightningMessage {
 		const {OpenChannelMessage} = require('./messages/open_channel');
 		const {AcceptChannelMessage} = require('./messages/accept_channel');
 		const {InitMessage} = require('./messages/init');
+		const {PingMessage} = require('./messages/ping');
+		const {PongMessage} = require('./messages/pong');
 
 		const type = undelimitedBuffer.readUInt16BE(0);
 		const undelimitedData = undelimitedBuffer.slice(2);
@@ -59,6 +61,12 @@ export default abstract class LightningMessage {
 				break;
 			case LightningMessageTypes.INIT:
 				message = new InitMessage({});
+				break;
+			case LightningMessageTypes.PING:
+				message = new PingMessage({});
+				break;
+			case LightningMessageTypes.PONG:
+				message = new PongMessage({});
 				break;
 			default:
 				throw new Error('unsupported data');

@@ -3,6 +3,8 @@ import LightningMessage, {LightningMessageTypes} from '../src/lightning_message'
 import {OpenChannelMessage} from '../src/messages/open_channel';
 import {AcceptChannelMessage} from '../src/messages/accept_channel';
 import {InitMessage} from '../src/messages/init';
+import {PingMessage} from '../src/messages/ping';
+import {PongMessage} from '../src/messages/pong';
 
 const assert = chai.assert;
 
@@ -39,6 +41,22 @@ describe('Lightning Message Tests', () => {
 		assert.instanceOf(restoredMessage, InitMessage);
 		assert.equal(restoredMessage['values'].gflen, 9);
 		assert.equal(restoredMessage['values'].lflen, 11);
-	})
+	});
+
+	it('should serialize ping/pong messages', () => {
+		const pingMessage = new PingMessage({
+			num_pong_bytes: 7,
+			ignored: Buffer.alloc(6, 0)
+		});
+		const pingData = Buffer.concat([pingMessage.toBuffer(), Buffer.alloc(15, 0)]);
+		const receivedPingMessage = LightningMessage.parse(pingData);
+		assert.instanceOf(receivedPingMessage, PingMessage);
+		const pongMessage = new PongMessage({
+			ignored: Buffer.alloc(pingMessage['values'].num_pong_bytes)
+		});
+		const pongData = pongMessage.toBuffer();
+		const expectedPongLength = 2 + 2 + 7; // type length + byteslen + ignored
+		assert.equal(pongData.length, expectedPongLength);
+	});
 
 });
