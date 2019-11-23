@@ -93,9 +93,9 @@ typings/
 .tm_properties
 
 # Ignore Typescript Generated Files:
-*.d.ts
-*.js
+*.ts
 *.map
 
-
+# Unignore type files
+!*.d.ts
 
