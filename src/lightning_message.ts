@@ -2,7 +2,6 @@ import bigintBuffer = require('bigint-buffer');
 import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types/message_field_type';
 import {Point} from 'ecurve';
-import {UnsupportedMessage} from './messages/unsupported';
 
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
@@ -49,7 +48,7 @@ export default abstract class LightningMessage {
 		const {InitMessage} = require('./messages/init');
 		const {PingMessage} = require('./messages/ping');
 		const {PongMessage} = require('./messages/pong');
-		const {Unsupported} = require('./messages/unsupported');
+		const {UnsupportedMessage} = require('./messages/unsupported');
 
 		const type = undelimitedBuffer.readUInt16BE(0);
 		const undelimitedData = undelimitedBuffer.slice(2);

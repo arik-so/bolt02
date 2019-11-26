@@ -1,6 +1,6 @@
 {
 	"name": "bolt02",
-	"version": "0.1.0",
+	"version": "0.1.2",
 	"description": "Utility for crafting and parsing messages between Lightning Network nodes.",
 	"main": "index.js",
 	"types": "index.d.ts",
