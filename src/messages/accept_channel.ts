@@ -30,7 +30,7 @@ export class AcceptChannelMessage extends LightningMessage {
 		this.values = values;
 	}
 
-	protected getType(): number {
+	public getType(): number {
 		return LightningMessageTypes.ACCEPT_CHANNEL;
 	}
 

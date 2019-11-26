@@ -15,7 +15,7 @@ export class PongMessage extends LightningMessage {
 		this.values = values;
 	}
 
-	protected getType(): number {
+	public getType(): number {
 		return LightningMessageTypes.PONG;
 	}
 

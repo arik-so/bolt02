@@ -17,7 +17,7 @@ export class InitMessage extends LightningMessage {
 		this.values = values;
 	}
 
-	protected getType(): number {
+	public getType(): number {
 		return LightningMessageTypes.INIT;
 	}
 

@@ -16,7 +16,7 @@ export class PingMessage extends LightningMessage {
 		this.values = values;
 	}
 
-	protected getType(): number {
+	public getType(): number {
 		return LightningMessageTypes.PING;
 	}
 

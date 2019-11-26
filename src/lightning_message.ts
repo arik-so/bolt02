@@ -2,6 +2,7 @@ import bigintBuffer = require('bigint-buffer');
 import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types/message_field_type';
 import {Point} from 'ecurve';
+import {UnsupportedMessage} from './messages/unsupported';
 
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
@@ -48,6 +49,7 @@ export default abstract class LightningMessage {
 		const {InitMessage} = require('./messages/init');
 		const {PingMessage} = require('./messages/ping');
 		const {PongMessage} = require('./messages/pong');
+		const {Unsupported} = require('./messages/unsupported');
 
 		const type = undelimitedBuffer.readUInt16BE(0);
 		const undelimitedData = undelimitedBuffer.slice(2);
@@ -69,7 +71,8 @@ export default abstract class LightningMessage {
 				message = new PongMessage({});
 				break;
 			default:
-				throw new Error('unsupported data');
+				message = new UnsupportedMessage(type);
+				return message;
 		}
 		return message.parseData(undelimitedData);
 	}
@@ -157,7 +160,7 @@ export default abstract class LightningMessage {
 		return buffer;
 	}
 
-	protected abstract getType(): number;
+	public abstract getType(): number;
 
 	protected abstract getFields(): LightningMessageField[];
 
@@ -167,5 +170,9 @@ export default abstract class LightningMessage {
 
 	// may actually never be used
 	protected abstract serializeCustomField(field: LightningMessageField, value: any): Buffer;
+
+	public getTypeName(): string {
+		return LightningMessageTypes[this.getType()];
+	}
 
 }
