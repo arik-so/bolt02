@@ -59,4 +59,9 @@ describe('Lightning Message Tests', () => {
 		assert.equal(pongData.length, expectedPongLength);
 	});
 
+	it('should test a fake message', () => {
+		const inputBuffer = Buffer.from('000374a9a7c7ebc55e62f5975c9ce41904139ca1bf2ee3811448721ce44e4138d7bf9816c9fce8d057d5dfb386e55be8b2cf', 'hex');
+		console.log('here');
+	});
+
 });
