@@ -4,6 +4,7 @@ export enum MessageFieldType {
 	u64,
 	HASH,
 	POINT,
+	SIGNATURE,
 	BYTE
 }
 
@@ -20,6 +21,7 @@ export class MessageFieldTypeHandler {
 		[MessageFieldType.u64]: {name: 'u64', length: 8},
 		[MessageFieldType.HASH]: {name: 'hash', length: 32},
 		[MessageFieldType.POINT]: {name: 'point', length: 33},
+		[MessageFieldType.SIGNATURE]: {name: 'signature', length: 65},
 		[MessageFieldType.BYTE]: {name: 'byte', length: 1}
 	};
 

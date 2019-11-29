@@ -29,7 +29,9 @@ export enum LightningMessageTypes {
 	UPDATE_ADD_HTLC = 128,
 	UPDATE_FULFILL_HTLC = 130,
 	UPDATE_FAIL_HTLC = 131,
-	UPDATE_FAIL_MALFORMED_HTLC = 135
+	UPDATE_FAIL_MALFORMED_HTLC = 135,
+
+	CHANNEL_ANNOUNCEMENT = 256
 }
 
 export default abstract class LightningMessage {
@@ -49,6 +51,7 @@ export default abstract class LightningMessage {
 		const {PingMessage} = require('./messages/ping');
 		const {PongMessage} = require('./messages/pong');
 		const {UnsupportedMessage} = require('./messages/unsupported');
+		const {ChannelAnnouncementMessage} = require('./messages/channel_announcement');
 
 		const type = undelimitedBuffer.readUInt16BE(0);
 		const undelimitedData = undelimitedBuffer.slice(2);
@@ -68,6 +71,9 @@ export default abstract class LightningMessage {
 				break;
 			case LightningMessageTypes.PONG:
 				message = new PongMessage({});
+				break;
+			case LightningMessageTypes.CHANNEL_ANNOUNCEMENT:
+				message = new ChannelAnnouncementMessage({});
 				break;
 			default:
 				message = new UnsupportedMessage(type);
