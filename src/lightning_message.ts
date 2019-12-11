@@ -2,6 +2,7 @@ import bigintBuffer = require('bigint-buffer');
 import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types/message_field_type';
 import {Point} from 'ecurve';
+import {TLV} from 'lightning-tlv';
 
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
@@ -31,7 +32,11 @@ export enum LightningMessageTypes {
 	UPDATE_FAIL_HTLC = 131,
 	UPDATE_FAIL_MALFORMED_HTLC = 135,
 
-	CHANNEL_ANNOUNCEMENT = 256
+	CHANNEL_ANNOUNCEMENT = 256,
+	CHANNEL_UPDATE = 258,
+
+	QUERY_CHANNEL_RANGE = 263,
+	REPLY_CHANNEL_RANGE = 264
 }
 
 export default abstract class LightningMessage {
@@ -52,6 +57,8 @@ export default abstract class LightningMessage {
 		const {PongMessage} = require('./messages/pong');
 		const {UnsupportedMessage} = require('./messages/unsupported');
 		const {ChannelAnnouncementMessage} = require('./messages/channel_announcement');
+		const {QueryChannelRangeMessage} = require('./messages/query_channel_range');
+		const {ReplyChannelRangeMessage} = require('./messages/reply_channel_range');
 
 		const type = undelimitedBuffer.readUInt16BE(0);
 		const undelimitedData = undelimitedBuffer.slice(2);
@@ -75,6 +82,12 @@ export default abstract class LightningMessage {
 			case LightningMessageTypes.CHANNEL_ANNOUNCEMENT:
 				message = new ChannelAnnouncementMessage({});
 				break;
+			case LightningMessageTypes.QUERY_CHANNEL_RANGE:
+				message = new QueryChannelRangeMessage({});
+				break;
+			case LightningMessageTypes.REPLY_CHANNEL_RANGE:
+				message = new ReplyChannelRangeMessage({});
+				break;
 			default:
 				message = new UnsupportedMessage(type);
 				return message;
@@ -86,27 +99,47 @@ export default abstract class LightningMessage {
 		let offset = 0;
 		const fields = this.getFields();
 		for (const currentField of fields) {
+
 			const currentType = currentField.type;
 			if (currentType in MessageFieldType) {
+
 				// @ts-ignore
 				const currentTypeDetails = MessageFieldTypeHandler.getTypeDetails(currentType);
-				const valueBuffer = undelimitedBuffer.slice(offset, offset + currentTypeDetails.length);
-				offset += currentTypeDetails.length;
 
-				// TODO: use custom type handler with valueBuffer
-				let value: any = valueBuffer;
-				if (currentType === MessageFieldType.u16) {
-					value = valueBuffer.readUInt16BE(0);
-				} else if (currentType === MessageFieldType.u32) {
-					value = valueBuffer.readUInt32BE(0);
-				} else if (currentType === MessageFieldType.u64) {
-					value = bigintBuffer.toBigIntBE(valueBuffer);
-				} else if (currentType === MessageFieldType.POINT) {
-					value = ecurve.Point.decodeFrom(secp256k1, valueBuffer);
-				} else if (currentType === MessageFieldType.BYTE) {
-					value = valueBuffer.readUInt8(0);
+				if (currentTypeDetails.length) {
+					const valueBuffer = undelimitedBuffer.slice(offset, offset + currentTypeDetails.length);
+					offset += currentTypeDetails.length;
+
+					// TODO: use custom type handler with valueBuffer
+					let value: any = valueBuffer;
+					if (currentType === MessageFieldType.u16) {
+						value = valueBuffer.readUInt16BE(0);
+					} else if (currentType === MessageFieldType.u32) {
+						value = valueBuffer.readUInt32BE(0);
+					} else if (currentType === MessageFieldType.u64) {
+						value = bigintBuffer.toBigIntBE(valueBuffer);
+					} else if (currentType === MessageFieldType.POINT) {
+						value = ecurve.Point.decodeFrom(secp256k1, valueBuffer);
+					} else if (currentType === MessageFieldType.BYTE) {
+						value = valueBuffer.readUInt8(0);
+					}
+					this.values[currentField.name] = value;
+				} else if (currentType === MessageFieldType.TLV_STREAM) {
+					const remainingBuffer = undelimitedBuffer.slice(offset);
+					offset += remainingBuffer.length; // this should be the last value
+
+					// parse the TLV stream
+					const tlvs: TLV[] = [];
+					let tlvOffset = 0;
+					while (tlvOffset < remainingBuffer.length) {
+						const remainingTLVBuffer = remainingBuffer.slice(tlvOffset);
+						const currentTlv = TLV.parse(remainingTLVBuffer);
+						tlvOffset += currentTlv.tlvSize;
+						tlvs.push(currentTlv);
+					}
+					this.values[currentField.name] = tlvs;
 				}
-				this.values[currentField.name] = value;
+
 			} else {
 				// do custom handling
 				const customFieldResult = this.parseCustomField(undelimitedBuffer.slice(offset), currentField);
@@ -139,22 +172,33 @@ export default abstract class LightningMessage {
 				// we don't need to do anything custom
 				buffer = Buffer.concat([buffer, value]);
 			} else if (currentType in MessageFieldType) {
+
 				// @ts-ignore
 				const currentTypeDetails = MessageFieldTypeHandler.getTypeDetails(currentType);
-				const valueBuffer = Buffer.alloc(currentTypeDetails.length, 0);
 
-				if (currentType === MessageFieldType.u16) {
-					valueBuffer.writeUInt16BE(value, 0);
-				} else if (currentType === MessageFieldType.u32) {
-					valueBuffer.writeUInt32BE(value, 0);
-				} else if (currentType === MessageFieldType.u64) {
-					bigintBuffer.toBufferBE(value as bigint, 8).copy(valueBuffer);
-				} else if (currentType === MessageFieldType.POINT) {
-					(value as Point).getEncoded(true).copy(valueBuffer);
-				} else if (currentType === MessageFieldType.BYTE) {
-					valueBuffer.writeUInt8(value, 0);
+				if (currentTypeDetails.length) {
+					const valueBuffer = Buffer.alloc(currentTypeDetails.length, 0);
+
+					if (currentType === MessageFieldType.u16) {
+						valueBuffer.writeUInt16BE(value, 0);
+					} else if (currentType === MessageFieldType.u32) {
+						valueBuffer.writeUInt32BE(value, 0);
+					} else if (currentType === MessageFieldType.u64) {
+						bigintBuffer.toBufferBE(value as bigint, 8).copy(valueBuffer);
+					} else if (currentType === MessageFieldType.POINT) {
+						(value as Point).getEncoded(true).copy(valueBuffer);
+					} else if (currentType === MessageFieldType.BYTE) {
+						valueBuffer.writeUInt8(value, 0);
+					}
+					buffer = Buffer.concat([buffer, valueBuffer]);
+
+				} else if (currentType === MessageFieldType.TLV_STREAM) {
+					const tlvs = value as TLV[];
+					const tlvBuffers = tlvs.map(tlv => tlv.toBuffer());
+					const valueBuffer = Buffer.concat(tlvBuffers);
+					buffer = Buffer.concat([buffer, valueBuffer]);
 				}
-				buffer = Buffer.concat([buffer, valueBuffer]);
+
 			} else {
 				// do custom handling
 				// TODO: figure out way to avoid logic duplication

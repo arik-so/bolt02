@@ -5,7 +5,8 @@ export enum MessageFieldType {
 	HASH,
 	POINT,
 	SIGNATURE,
-	BYTE
+	BYTE,
+	TLV_STREAM, // if present, must always be the last field
 }
 
 export interface MessageFieldTypeDetails {
@@ -22,7 +23,8 @@ export class MessageFieldTypeHandler {
 		[MessageFieldType.HASH]: {name: 'hash', length: 32},
 		[MessageFieldType.POINT]: {name: 'point', length: 33},
 		[MessageFieldType.SIGNATURE]: {name: 'signature', length: 65},
-		[MessageFieldType.BYTE]: {name: 'byte', length: 1}
+		[MessageFieldType.BYTE]: {name: 'byte', length: 1},
+		[MessageFieldType.TLV_STREAM]: {name: 'tlvs'}
 	};
 
 	public static getTypeDetails(type: MessageFieldType): MessageFieldTypeDetails {

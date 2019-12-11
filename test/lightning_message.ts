@@ -5,6 +5,9 @@ import {AcceptChannelMessage} from '../src/messages/accept_channel';
 import {InitMessage} from '../src/messages/init';
 import {PingMessage} from '../src/messages/ping';
 import {PongMessage} from '../src/messages/pong';
+import {QueryChannelRangeMessage} from '../src/messages/query_channel_range';
+import {BigSize, TLV} from 'lightning-tlv';
+import {ReplyChannelRangeMessage} from '../src/messages/reply_channel_range';
 
 const assert = chai.assert;
 
@@ -59,9 +62,55 @@ describe('Lightning Message Tests', () => {
 		assert.equal(pongData.length, expectedPongLength);
 	});
 
-	it('should test a fake message', () => {
+	xit('should test a fake message', () => {
 		const inputBuffer = Buffer.from('000374a9a7c7ebc55e62f5975c9ce41904139ca1bf2ee3811448721ce44e4138d7bf9816c9fce8d057d5dfb386e55be8b2cf', 'hex');
 		console.log('here');
+	});
+
+	it('should serialize query channel range message', () => {
+		const queryMessage = new QueryChannelRangeMessage({
+			chain_hash: Buffer.from('000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943', 'hex'),
+			first_blocknum: 27,
+			number_of_blocks: 34,
+			query_channel_range_tlvs: [
+				new TLV(1, (new BigSize(24)).toBuffer()),
+				new TLV(1, (new BigSize(1038)).toBuffer()),
+				new TLV(1, (new BigSize(65321)).toBuffer()),
+				new TLV(1, (new BigSize(0)).toBuffer())
+			]
+		});
+		const serialized = queryMessage.toBuffer();
+		const deserialized = LightningMessage.parse(serialized) as QueryChannelRangeMessage;
+		const reserialized = deserialized.toBuffer();
+		assert.equal(reserialized.toString('hex'), serialized.toString('hex'));
+		assert.equal(deserialized['values'].first_blocknum, 27);
+		assert.equal(deserialized['values'].number_of_blocks, 34);
+		assert.equal(deserialized['values'].query_channel_range_tlvs.length, 4);
+	});
+
+	it('should serialize reply channel range message', () => {
+		const replyMessage = new ReplyChannelRangeMessage({
+			chain_hash: Buffer.from('000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943', 'hex'),
+			first_blocknum: 27,
+			number_of_blocks: 34,
+			complete: 56,
+			encoded_short_ids: Buffer.alloc(8, 2),
+			reply_channel_range_tlvs: [
+				new TLV(1, (new BigSize(24)).toBuffer()),
+				new TLV(1, (new BigSize(1038)).toBuffer()),
+				new TLV(1, (new BigSize(65321)).toBuffer()),
+				new TLV(1, (new BigSize(0)).toBuffer())
+			]
+		});
+		const serialized = replyMessage.toBuffer();
+		const deserialized = LightningMessage.parse(serialized) as ReplyChannelRangeMessage;
+		const reserialized = deserialized.toBuffer();
+		assert.equal(reserialized.toString('hex'), serialized.toString('hex'));
+		assert.equal(deserialized['values'].first_blocknum, 27);
+		assert.equal(deserialized['values'].number_of_blocks, 34);
+		assert.equal(deserialized['values'].complete, 56);
+		assert.equal(deserialized['values'].encoded_short_ids.length, 8);
+		assert.equal(deserialized['values'].reply_channel_range_tlvs.length, 4);
 	});
 
 });
