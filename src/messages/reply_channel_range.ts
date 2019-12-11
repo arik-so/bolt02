@@ -37,6 +37,20 @@ export class ReplyChannelRangeMessage extends LightningMessage {
 		];
 	}
 
+	public get shortChannelIds(): Buffer[] {
+		if (this.values.encoded_short_ids[0] !== 1) {
+			throw new Error('unsupported short id encoding');
+		}
+
+		const channelIds: Buffer[] = [];
+		for (let i = 1; i < this.values.encoded_short_ids.length; i += 8) {
+			const currentChannelId = this.values.encoded_short_ids.slice(i, i + 8);
+			channelIds.push(currentChannelId);
+		}
+
+		return channelIds;
+	}
+
 	protected parseCustomField(remainingBuffer: Buffer, field: LightningMessageField): { value: any, offsetDelta: number } {
 		if (field.type === 'encoded_short_ids') {
 			const value: Buffer = remainingBuffer.slice(0, this.values.len);
