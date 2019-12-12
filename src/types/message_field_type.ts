@@ -23,7 +23,7 @@ export class MessageFieldTypeHandler {
 		[MessageFieldType.u64]: {name: 'u64', length: 8},
 		[MessageFieldType.HASH]: {name: 'hash', length: 32},
 		[MessageFieldType.POINT]: {name: 'point', length: 33},
-		[MessageFieldType.SIGNATURE]: {name: 'signature', length: 65},
+		[MessageFieldType.SIGNATURE]: {name: 'signature', length: 64},
 		[MessageFieldType.BYTE]: {name: 'byte', length: 1},
 		[MessageFieldType.COLOR]: {name: 'color', length: 3},
 		[MessageFieldType.TLV_STREAM]: {name: 'tlvs'}
