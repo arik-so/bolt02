@@ -7,6 +7,7 @@ export enum MessageFieldType {
 	SIGNATURE,
 	BYTE,
 	COLOR,
+	SHORT_CHANNEL_ID,
 	TLV_STREAM, // if present, must always be the last field
 }
 
@@ -26,6 +27,7 @@ export class MessageFieldTypeHandler {
 		[MessageFieldType.SIGNATURE]: {name: 'signature', length: 64},
 		[MessageFieldType.BYTE]: {name: 'byte', length: 1},
 		[MessageFieldType.COLOR]: {name: 'color', length: 3},
+		[MessageFieldType.SHORT_CHANNEL_ID]: {name: 'short-channel-id', length: 8},
 		[MessageFieldType.TLV_STREAM]: {name: 'tlvs'}
 	};
 

@@ -39,7 +39,7 @@ export class ChannelAnnouncementMessage extends LightningMessage {
 			{name: 'len', type: MessageFieldType.u16, dynamic_value: true},
 			{name: 'features', type: 'features'},
 			{name: 'chain_hash', type: MessageFieldType.HASH},
-			{name: 'short_channel_id', type: MessageFieldType.HASH},
+			{name: 'short_channel_id', type: MessageFieldType.SHORT_CHANNEL_ID},
 			{name: 'node_id_1', type: MessageFieldType.POINT},
 			{name: 'node_id_2', type: MessageFieldType.POINT},
 			{name: 'bitcoin_key_1', type: MessageFieldType.POINT},
