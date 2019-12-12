@@ -3,7 +3,9 @@ import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types/message_field_type';
 import {Point} from 'ecurve';
 import {TLV} from 'lightning-tlv';
+import * as debugModule from 'debug';
 
+const debug = debugModule('bolt02:lightning-message');
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
 export interface LightningMessageField {
@@ -60,12 +62,14 @@ export default abstract class LightningMessage {
 		const {PongMessage} = require('./messages/pong');
 		const {UnsupportedMessage} = require('./messages/unsupported');
 		const {ChannelAnnouncementMessage} = require('./messages/channel_announcement');
+		const {NodeAnnouncementMessage} = require('./messages/node_announcement');
 		const {QueryShortChannelIdsMessage} = require('./messages/query_short_channel_ids');
 		const {ReplyShortChannelIdsEndMessage} = require('./messages/reply_short_channel_ids_end');
 		const {QueryChannelRangeMessage} = require('./messages/query_channel_range');
 		const {ReplyChannelRangeMessage} = require('./messages/reply_channel_range');
 
 		const type = undelimitedBuffer.readUInt16BE(0);
+		debug('Parsing message of type %s (%d)', LightningMessageTypes[type], type);
 		const undelimitedData = undelimitedBuffer.slice(2);
 		let message: LightningMessage;
 		switch (type) {
@@ -85,13 +89,16 @@ export default abstract class LightningMessage {
 				message = new PongMessage({});
 				break;
 			case LightningMessageTypes.CHANNEL_ANNOUNCEMENT:
-				message = new QueryShortChannelIdsMessage({});
+				message = new ChannelAnnouncementMessage({});
+				break;
+			case LightningMessageTypes.NODE_ANNOUNCEMENT:
+				message = new NodeAnnouncementMessage({});
 				break;
 			case LightningMessageTypes.QUERY_SHORT_CHANNEL_IDS:
-				message = new ReplyShortChannelIdsEndMessage({});
+				message = new QueryShortChannelIdsMessage({});
 				break;
 			case LightningMessageTypes.REPLY_SHORT_CHANNEL_IDS_END:
-				message = new QueryChannelRangeMessage({});
+				message = new ReplyShortChannelIdsEndMessage({});
 				break;
 			case LightningMessageTypes.QUERY_CHANNEL_RANGE:
 				message = new QueryChannelRangeMessage({});
