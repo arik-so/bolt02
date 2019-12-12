@@ -33,8 +33,11 @@ export enum LightningMessageTypes {
 	UPDATE_FAIL_MALFORMED_HTLC = 135,
 
 	CHANNEL_ANNOUNCEMENT = 256,
+	NODE_ANNOUNCEMENT = 257,
 	CHANNEL_UPDATE = 258,
 
+	QUERY_SHORT_CHANNEL_IDS = 261,
+	REPLY_SHORT_CHANNEL_IDS_END = 262,
 	QUERY_CHANNEL_RANGE = 263,
 	REPLY_CHANNEL_RANGE = 264
 }
@@ -57,6 +60,8 @@ export default abstract class LightningMessage {
 		const {PongMessage} = require('./messages/pong');
 		const {UnsupportedMessage} = require('./messages/unsupported');
 		const {ChannelAnnouncementMessage} = require('./messages/channel_announcement');
+		const {QueryShortChannelIdsMessage} = require('./messages/query_short_channel_ids');
+		const {ReplyShortChannelIdsEndMessage} = require('./messages/reply_short_channel_ids_end');
 		const {QueryChannelRangeMessage} = require('./messages/query_channel_range');
 		const {ReplyChannelRangeMessage} = require('./messages/reply_channel_range');
 
@@ -80,7 +85,13 @@ export default abstract class LightningMessage {
 				message = new PongMessage({});
 				break;
 			case LightningMessageTypes.CHANNEL_ANNOUNCEMENT:
-				message = new ChannelAnnouncementMessage({});
+				message = new QueryShortChannelIdsMessage({});
+				break;
+			case LightningMessageTypes.QUERY_SHORT_CHANNEL_IDS:
+				message = new ReplyShortChannelIdsEndMessage({});
+				break;
+			case LightningMessageTypes.REPLY_SHORT_CHANNEL_IDS_END:
+				message = new QueryChannelRangeMessage({});
 				break;
 			case LightningMessageTypes.QUERY_CHANNEL_RANGE:
 				message = new QueryChannelRangeMessage({});

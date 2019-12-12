@@ -6,6 +6,7 @@ export enum MessageFieldType {
 	POINT,
 	SIGNATURE,
 	BYTE,
+	COLOR,
 	TLV_STREAM, // if present, must always be the last field
 }
 
@@ -24,6 +25,7 @@ export class MessageFieldTypeHandler {
 		[MessageFieldType.POINT]: {name: 'point', length: 33},
 		[MessageFieldType.SIGNATURE]: {name: 'signature', length: 65},
 		[MessageFieldType.BYTE]: {name: 'byte', length: 1},
+		[MessageFieldType.COLOR]: {name: 'color', length: 3},
 		[MessageFieldType.TLV_STREAM]: {name: 'tlvs'}
 	};
 

@@ -2,38 +2,32 @@ import LightningMessage, {LightningMessageField, LightningMessageTypes} from '..
 import {MessageFieldType} from '../types/message_field_type';
 import TLV from 'lightning-tlv/src/tlv';
 
-export interface ReplyChannelRangeMessageFields {
+export interface QueryShortChannelIdsMessageFields {
 	chain_hash: Buffer,
-	first_blocknum: number,
-	number_of_blocks: number,
-	complete: number,
 	len?: number,
 	encoded_short_ids: Buffer,
-	reply_channel_range_tlvs: TLV[],
+	query_short_channel_ids_tlvs: TLV[]
 }
 
-export class ReplyChannelRangeMessage extends LightningMessage {
+export class QueryShortChannelIdsMessage extends LightningMessage {
 
-	protected values: ReplyChannelRangeMessageFields;
+	protected values: QueryShortChannelIdsMessageFields;
 
-	constructor(values: ReplyChannelRangeMessageFields) {
+	constructor(values: QueryShortChannelIdsMessageFields) {
 		super();
 		this.values = values;
 	}
 
 	public getType(): number {
-		return LightningMessageTypes.REPLY_CHANNEL_RANGE;
+		return LightningMessageTypes.QUERY_SHORT_CHANNEL_IDS;
 	}
 
 	protected getFields(): LightningMessageField[] {
 		return [
 			{name: 'chain_hash', type: MessageFieldType.HASH},
-			{name: 'first_blocknum', type: MessageFieldType.u32},
-			{name: 'number_of_blocks', type: MessageFieldType.u32},
-			{name: 'complete', type: MessageFieldType.BYTE},
 			{name: 'len', type: MessageFieldType.u16, dynamic_value: true},
 			{name: 'encoded_short_ids', type: 'encoded_short_ids'},
-			{name: 'reply_channel_range_tlvs', type: MessageFieldType.TLV_STREAM}
+			{name: 'query_short_channel_ids_tlvs', type: MessageFieldType.TLV_STREAM}
 		];
 	}
 
